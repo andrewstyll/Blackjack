@@ -20,6 +20,7 @@ public class GameScreen implements Screen {
     private Array<Sprite> drawnCards;
     private int[] slotCardCount = new int[4];
     private int[] slotScore = new int[4];
+    private boolean[] aceCount = new boolean[4];
 
     private Deck deck;
     private Sprite cardSprite;
@@ -65,11 +66,18 @@ public class GameScreen implements Screen {
 
     private void placeCardInSlot(int slotIndex) {
         slotCardCount[slotIndex]++;
-        slotScore[slotIndex] += card.getRank().getValue();
+        if(card.getRank() == Card.Rank.ACE) {
+            aceCount[slotIndex] = true;
+        }
+        slotScore[slotIndex] += Math.min(card.getRank().getValue(), 10);
         Tween movement = Tween.to(cardSprite, SpriteAccessor.POS_XY, 1.0f);
         movement.target(cardSprite.getX() + 145+(160*slotIndex), 480 - cardSprite.getHeight() - 36 * slotCardCount[slotIndex]);
         movement.start(game.tweenManager);
         drawCardFromDeck();
+    }
+
+    private int getScoreWithAce(int score) {
+        return score+10;
     }
 
     @Override
@@ -105,7 +113,16 @@ public class GameScreen implements Screen {
             drawnCard.draw(game.batch);
         }
         for(int i = 0; i < 4; i++) {
-            game.text.draw(game.batch, Integer.toString(slotScore[i]), 220 +(i*160), 470);
+            int altScore = 0;
+            String score = Integer.toString(slotScore[i]);
+            if (aceCount[i] == true) {
+                altScore = getScoreWithAce(slotScore[i]);
+                score = Integer.toString(slotScore[i])+ " / " +Integer.toString(altScore);
+            }
+            if (altScore > 21 || slotScore[i] > 21) {
+                score = "BUST!!!";
+            }
+            game.text.draw(game.batch, score, 220 + (i * 160), 470);
         }
 
         game.batch.end();

@@ -17,6 +17,7 @@ public class GameScreen implements Screen {
     private OrthographicCamera camera;
 
     private Array<Array<Texture>> cardTextures;
+    private Array<Sprite> drawnCards;
 
     private Deck deck;
     private Sprite cardSprite;
@@ -39,24 +40,30 @@ public class GameScreen implements Screen {
                 cardTextures.get(suit.getValue()).add(new Texture(Gdx.files.internal(filename)));
             }
         }
+        drawnCards = new Array<Sprite>();
 
         deck = new Deck();
 
-        cardSprite = new Sprite(cardTextures.get(3).get(5));
-        float scale = 150 / cardSprite.getWidth();
-        cardSprite.setSize(150, cardSprite.getHeight() * scale);
-        cardSprite.setPosition(0, 0);
+        drawCardFromDeck();
     }
 
     private void drawCardFromDeck() {
         Card card = deck.draw();
         if (card != null) {
             Texture texture = cardTextures.get(card.getSuit().getValue()).get(card.getRank().getValue() - 1);
-            cardSprite.setTexture(texture);
-            Tween movement = Tween.to(cardSprite, SpriteAccessor.POS_XY, 1.0f);
-            movement.target(cardSprite.getX() + 25, cardSprite.getY() + 25);
-            movement.start(game.tweenManager);
+            //cardSprite.setTexture(texture);
+            cardSprite = new Sprite(texture);
+            drawnCards.add(cardSprite);
         }
+        float scale = 150 / cardSprite.getWidth();
+        cardSprite.setSize(150, cardSprite.getHeight() * scale);
+        cardSprite.setPosition(0, 0);
+    }
+
+    private void placeCardInSlot(int slotNumber) {
+        Tween movement = Tween.to(cardSprite, SpriteAccessor.POS_XY, 1.0f);
+        movement.target(cardSprite.getX() + slotNumber, 480 - cardSprite.getHeight());
+        movement.start(game.tweenManager);
     }
 
     @Override
@@ -66,10 +73,22 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+            placeCardInSlot(145);
             drawCardFromDeck();
         }
-
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+            placeCardInSlot(305);
+            drawCardFromDeck();
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
+            placeCardInSlot(465);
+            drawCardFromDeck();
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
+            placeCardInSlot(625);
+            drawCardFromDeck();
+        }
         game.tweenManager.update(delta);
 
         // Reset the screen
@@ -80,7 +99,9 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        cardSprite.draw(game.batch);
+        for(Sprite drawnCard : drawnCards) {
+            drawnCard.draw(game.batch);
+        }
 
         game.batch.end();
     }

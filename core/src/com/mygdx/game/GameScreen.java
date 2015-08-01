@@ -19,9 +19,11 @@ public class GameScreen implements Screen {
     private Array<Array<Texture>> cardTextures;
     private Array<Sprite> drawnCards;
     private int[] slotCardCount = new int[4];
+    private int[] slotScore = new int[4];
 
     private Deck deck;
     private Sprite cardSprite;
+    private Card card;
 
     public GameScreen(final BlackjackGame _game) {
         game = _game;
@@ -49,7 +51,7 @@ public class GameScreen implements Screen {
     }
 
     private void drawCardFromDeck() {
-        Card card = deck.draw();
+        card = deck.draw();
         if (card != null) {
             Texture texture = cardTextures.get(card.getSuit().getValue()).get(card.getRank().getValue() - 1);
             //cardSprite.setTexture(texture);
@@ -61,11 +63,13 @@ public class GameScreen implements Screen {
         cardSprite.setPosition(0, 0);
     }
 
-    private void placeCardInSlot(int slotValue, int cardCount) {
+    private void placeCardInSlot(int slotIndex) {
+        slotCardCount[slotIndex]++;
+        slotScore[slotIndex] += card.getRank().getValue();
         Tween movement = Tween.to(cardSprite, SpriteAccessor.POS_XY, 1.0f);
-
-        movement.target(cardSprite.getX() + slotValue, 480 - cardSprite.getHeight() - 36 * cardCount);
+        movement.target(cardSprite.getX() + 145+(160*slotIndex), 480 - cardSprite.getHeight() - 36 * slotCardCount[slotIndex]);
         movement.start(game.tweenManager);
+        drawCardFromDeck();
     }
 
     @Override
@@ -76,24 +80,16 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
-            slotCardCount[0]++;
-            placeCardInSlot(145, slotCardCount[0]);
-            drawCardFromDeck();
+            placeCardInSlot(0);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            slotCardCount[1]++;
-            placeCardInSlot(305, slotCardCount[1]);
-            drawCardFromDeck();
+            placeCardInSlot(1);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            slotCardCount[2]++;
-            placeCardInSlot(465, slotCardCount[2]);
-            drawCardFromDeck();
+            placeCardInSlot(2);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
-            slotCardCount[3]++;
-            placeCardInSlot(625, slotCardCount[3]);
-            drawCardFromDeck();
+            placeCardInSlot(3);
         }
         game.tweenManager.update(delta);
 
@@ -107,6 +103,9 @@ public class GameScreen implements Screen {
 
         for(Sprite drawnCard : drawnCards) {
             drawnCard.draw(game.batch);
+        }
+        for(int i = 0; i < 4; i++) {
+            game.text.draw(game.batch, Integer.toString(slotScore[i]), 220 +(i*160), 470);
         }
 
         game.batch.end();

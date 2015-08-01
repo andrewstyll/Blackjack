@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -12,11 +13,11 @@ public class GameScreen implements Screen {
     final BlackjackGame game;
 
     private OrthographicCamera camera;
-    //private Texture cardImage;
 
     private Array<Array<Texture>> cardTextures;
 
-    private Sprite card;
+    private Deck deck;
+    private Sprite cardSprite;
 
     public GameScreen(final BlackjackGame _game) {
         game = _game;
@@ -27,20 +28,32 @@ public class GameScreen implements Screen {
         //cardImage = new Texture(Gdx.files.internal("c12.png"));
         cardTextures = new Array<Array<Texture>>(4);
         String[] suits = {"spades", "hearts", "clubs", "diamonds"};
-        for(int j = 0; j < 4; j++) {
+        for (Card.Suit suit : Card.Suit.values()) {
             //this will grow this array from the first dimension onwards (implicit dimension)
             //from the first index onwards
             cardTextures.add(new Array<Texture>(13));
-            for(int i = 1; i <= 13; i++) {
-                String filename = suits[j].charAt(0) + String.format("%02d", i) + ".png";
-                cardTextures.get(j).add(new Texture(Gdx.files.internal(filename)));
+            for (Card.Rank rank : Card.Rank.values()) {
+                String filename = suits[suit.getValue()].charAt(0) + String.format("%02d", rank.getValue()) + ".png";
+                cardTextures.get(suit.getValue()).add(new Texture(Gdx.files.internal(filename)));
             }
         }
-        card = new Sprite(cardTextures.get(3).get(5));
-        float scale = 150 / card.getWidth();
-        card.setSize(150, card.getHeight() * scale);
-        card.setPosition(0, 0);
+
+        deck = new Deck();
+
+        cardSprite = new Sprite(cardTextures.get(3).get(5));
+        float scale = 150 / cardSprite.getWidth();
+        cardSprite.setSize(150, cardSprite.getHeight() * scale);
+        cardSprite.setPosition(0, 0);
     }
+
+    private void drawCardFromDeck() {
+        Card card = deck.draw();
+        if (card != null) {
+            Texture texture = cardTextures.get(card.getSuit().getValue()).get(card.getRank().getValue() - 1);
+            cardSprite.setTexture(texture);
+        }
+    }
+
     @Override
     public void show() {
 
@@ -48,6 +61,10 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            drawCardFromDeck();
+        }
+
         // Reset the screen
         Gdx.gl.glClearColor(0, 0.8f, 0, 0.2f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -56,7 +73,7 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        card.draw(game.batch);
+        cardSprite.draw(game.batch);
 
         game.batch.end();
     }

@@ -18,6 +18,7 @@ public class GameScreen implements Screen {
 
     private Array<Array<Texture>> cardTextures;
     private Array<Sprite> drawnCards;
+    private int[] slotCardCount = new int[4];
 
     private Deck deck;
     private Sprite cardSprite;
@@ -60,9 +61,10 @@ public class GameScreen implements Screen {
         cardSprite.setPosition(0, 0);
     }
 
-    private void placeCardInSlot(int slotNumber) {
+    private void placeCardInSlot(int slotValue, int cardCount) {
         Tween movement = Tween.to(cardSprite, SpriteAccessor.POS_XY, 1.0f);
-        movement.target(cardSprite.getX() + slotNumber, 480 - cardSprite.getHeight());
+
+        movement.target(cardSprite.getX() + slotValue, 480 - cardSprite.getHeight() - 36 * cardCount);
         movement.start(game.tweenManager);
     }
 
@@ -74,19 +76,23 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
-            placeCardInSlot(145);
+            slotCardCount[0]++;
+            placeCardInSlot(145, slotCardCount[0]);
             drawCardFromDeck();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            placeCardInSlot(305);
+            slotCardCount[1]++;
+            placeCardInSlot(305, slotCardCount[1]);
             drawCardFromDeck();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            placeCardInSlot(465);
+            slotCardCount[2]++;
+            placeCardInSlot(465, slotCardCount[2]);
             drawCardFromDeck();
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
-            placeCardInSlot(625);
+            slotCardCount[3]++;
+            placeCardInSlot(625, slotCardCount[3]);
             drawCardFromDeck();
         }
         game.tweenManager.update(delta);

@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import aurelienribon.accessors.SpriteAccessor;
+import aurelienribon.tweenengine.Tween;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -51,6 +53,9 @@ public class GameScreen implements Screen {
         if (card != null) {
             Texture texture = cardTextures.get(card.getSuit().getValue()).get(card.getRank().getValue() - 1);
             cardSprite.setTexture(texture);
+            Tween movement = Tween.to(cardSprite, SpriteAccessor.POS_XY, 1.0f);
+            movement.target(cardSprite.getX() + 25, cardSprite.getY() + 25);
+            movement.start(game.tweenManager);
         }
     }
 
@@ -64,6 +69,8 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             drawCardFromDeck();
         }
+
+        game.tweenManager.update(delta);
 
         // Reset the screen
         Gdx.gl.glClearColor(0, 0.8f, 0, 0.2f);

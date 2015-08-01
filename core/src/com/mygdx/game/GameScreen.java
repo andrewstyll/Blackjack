@@ -20,7 +20,7 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
 
-        cardImage = new Texture(Gdx.files.internal("c11.png"));
+        cardImage = new Texture(Gdx.files.internal("c12.png"));
         card = new Sprite(cardImage);
         float scale = 150 / card.getWidth();
         card.setSize(150, card.getHeight() * scale);

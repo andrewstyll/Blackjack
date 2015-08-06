@@ -13,25 +13,27 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 public class GameScreen implements Screen {
-    final BlackjackGame game;
 
     private OrthographicCamera camera;
+    private Vector3 touchPos;
 
-    private Array<Array<Texture>> cardTextures;
-    private Array<Sprite> drawnCards;
-    private int[] slotCardCount = new int[4];
-    private int[] slotScore = new int[4];
-    private boolean[] aceCount = new boolean[4];
-
-    private Array<Array<Sprite>> cardsInSlot;
+    final BlackjackGame game;
 
     private Deck deck;
     private Sprite cardSprite;
     private Card card;
 
-    private int totalScore;
+    private Array<Array<Texture>> cardTextures;
+    private Array<Array<Sprite>> cardsInSlot;
+    private Array<Sprite> drawnCards;
 
-    private Vector3 touchPos;
+    private int[] slotCardCount = new int[4];//counts the number of cards in each slot
+    private int[] slotScore = new int[4];//holds the current score
+    private int[] altScore = new int[4];//holds an alternative score for ace = 11
+    private boolean[] aceCount = new boolean[4];//checks for aces
+
+    private int totalScore;//holds numerical total score
+    private String score;//the string that will output both the score
 
     public GameScreen(final BlackjackGame _game) {
         game = _game;
@@ -60,6 +62,7 @@ public class GameScreen implements Screen {
             cardsInSlot.add(new Array<Sprite>());
         }
         totalScore = 0;
+        score = "0";
         drawCardFromDeck();
     }
 
@@ -74,8 +77,9 @@ public class GameScreen implements Screen {
             cardSprite.setSize(150, cardSprite.getHeight() * scale);
             cardSprite.setPosition(0, 0);
         } else {
+            //deck = new Deck();
             game.dispose();
-            System.exit(03);
+            //System.exit(03);
         }
     }
 
@@ -85,7 +89,7 @@ public class GameScreen implements Screen {
         if(card.getRank() == Card.Rank.ACE) {
             aceCount[slotIndex] = true;
         }
-        slotScore[slotIndex] += Math.min(card.getRank().getValue(), 10);
+        slotScore[slotIndex] += Math.min(card.getRank().getValue(), 10);//calculate score
         Tween movement = Tween.to(cardSprite, SpriteAccessor.POS_XY, 1.0f);
         movement.target(cardSprite.getX() + 145+(160*slotIndex), 480 - cardSprite.getHeight() - 36 * cardsInSlot.get(slotIndex).size);
         movement.start(game.tweenManager);
@@ -96,18 +100,7 @@ public class GameScreen implements Screen {
         return score+10;
     }
 
-    /*private void clearSlot(int score) {
-
-    } */
-
-
-    @Override
-    public void show() {
-
-    }
-
-    @Override
-    public void render(float delta) {
+    private void readInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             placeCardInSlot(0);
         }
@@ -134,6 +127,20 @@ public class GameScreen implements Screen {
                 placeCardInSlot(3);
             }
         }
+    }
+
+    private void cleanUp(int index) {
+        drawnCards.removeAll(cardsInSlot.get(index), true);
+        cardsInSlot.get(index).clear();
+        slotScore[index] = 0;
+        altScore[index] = 0;
+        aceCount[index] = false;
+    }
+
+    @Override
+    public void render(float delta) {
+
+        readInput();
 
         game.tweenManager.update(delta);
 
@@ -149,34 +156,39 @@ public class GameScreen implements Screen {
             drawnCard.draw(game.batch);
         }
         for(int i = 0; i < 4; i++) {
-            int altScore = 0;
-            String score = Integer.toString(slotScore[i]);
+            //update scores here
             if (aceCount[i] == true) {
-                altScore = getScoreWithAce(slotScore[i]);
-                score = Integer.toString(slotScore[i])+ " / " +Integer.toString(altScore);
+                altScore[i] = getScoreWithAce(slotScore[i]);
+                score = Integer.toString(slotScore[i]) + " / " + Integer.toString(altScore[i]);
+            } else {
+                altScore[i] = slotScore[i];
+                score = Integer.toString(slotScore[i]);
             }
-            if (altScore == 21 || slotScore[i] == 21) {
-                drawnCards.removeAll(cardsInSlot.get(i), true);
-                cardsInSlot.get(i).clear();
-                slotScore[i] = 0;
-                aceCount[i] = false;
+            if (altScore[i] == 21 || slotScore[i] == 21) {
+                cleanUp(i);
                 score = "21!!!";
                 totalScore += 100;
             }
-            if (altScore > 21 || slotScore[i] > 21) {
-                drawnCards.removeAll(cardsInSlot.get(i), true);
-                cardsInSlot.get(i).clear();
-                slotScore[i] = 0;
-                aceCount[i] = false;
+            if (slotScore[i] > 21 && altScore[i] > 21) {
+                cleanUp(i);
                 score = "BUST!!!";
                 totalScore -= 25;
             }
             game.text.draw(game.batch, score, 220 + (i * 160), 470);
         }
 
-        game.text.draw(game.batch, Integer.toString(totalScore), 100 , 470);
+        game.text.draw(game.batch, Integer.toString(totalScore), 100 , 400);
 
         game.batch.end();
+    }
+
+    @Override
+    public void dispose() {
+        for(int j = 0; j < 4; j++) {
+            for(int i = 0; i < 13; i++) {
+                cardTextures.get(j).get(i).dispose();
+            }
+        }
     }
 
     @Override
@@ -200,11 +212,7 @@ public class GameScreen implements Screen {
     }
 
     @Override
-    public void dispose() {
-        for(int j = 0; j < 4; j++) {
-            for(int i = 0; i < 13; i++) {
-                cardTextures.get(j).get(i).dispose();
-            }
-        }
+    public void show() {
+
     }
 }

@@ -20,7 +20,7 @@ public class BlackjackGame extends Game {
 		Tween.registerAccessor(Sprite.class, new SpriteAccessor());
 
 		batch = new SpriteBatch();
-		this.setScreen(new GameScreen(this));
+		this.setScreen(new MainMenuScreen(this));
 
 		text = new BitmapFont();
 	}

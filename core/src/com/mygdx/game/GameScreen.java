@@ -32,8 +32,14 @@ public class GameScreen implements Screen {
     private int[] altScore = new int[4];//holds an alternative score for ace = 11
     private boolean[] aceCount = new boolean[4];//checks for aces
 
+    public static String totalScoreGlobal;
     private int totalScore;//holds numerical total score
     private String score;//the string that will output both the score
+
+    private float time;
+    //private int minutes;
+    private int seconds;
+    //private String displayTime;
 
     public GameScreen(final BlackjackGame _game) {
         game = _game;
@@ -61,8 +67,14 @@ public class GameScreen implements Screen {
         for(int i = 0; i < 4; i++) {
             cardsInSlot.add(new Array<Sprite>());
         }
+
         totalScore = 0;
         score = "0";
+        time = 61;
+        //minutes = 0;
+        seconds = 0;
+        //displayTime = "0:0";
+
         drawCardFromDeck();
     }
 
@@ -77,9 +89,8 @@ public class GameScreen implements Screen {
             cardSprite.setSize(150, cardSprite.getHeight() * scale);
             cardSprite.setPosition(0, 0);
         } else {
-            //deck = new Deck();
-            game.dispose();
-            //System.exit(03);
+            game.setScreen(new ScoreScreen(game));
+            dispose();
         }
     }
 
@@ -137,10 +148,21 @@ public class GameScreen implements Screen {
         aceCount[index] = false;
     }
 
+    private int timer() {
+        float deltaTime = Gdx.graphics.getDeltaTime();
+        time -= deltaTime;
+
+        return (int) time;
+        //minutes = ((int)time)/60;
+        //seconds = ((int)time)%60;
+    }
+
     @Override
     public void render(float delta) {
 
         readInput();
+
+        seconds = timer();
 
         game.tweenManager.update(delta);
 
@@ -176,10 +198,15 @@ public class GameScreen implements Screen {
             }
             game.text.draw(game.batch, score, 220 + (i * 160), 470);
         }
-
-        game.text.draw(game.batch, Integer.toString(totalScore), 100 , 400);
+        totalScoreGlobal = Integer.toString(totalScore);
+        game.text.draw(game.batch, "Time: " + Integer.toString(seconds), 100, 425);
+        game.text.draw(game.batch, totalScoreGlobal, 100 , 400);
 
         game.batch.end();
+
+        if(seconds <= 0) {
+            game.setScreen(new ScoreScreen(game));
+        }
     }
 
     @Override

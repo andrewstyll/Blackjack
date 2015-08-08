@@ -2,7 +2,7 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Music;
+//import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
@@ -11,7 +11,7 @@ public class ScoreScreen implements Screen{
 
     OrthographicCamera camera;
 
-    private Music sax;
+    //private Music sax;
 
     public ScoreScreen(final BlackjackGame _game) {
         game = _game;
@@ -19,9 +19,9 @@ public class ScoreScreen implements Screen{
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
 
-        sax = Gdx.audio.newMusic(Gdx.files.internal("Sax.mp3"));
+        //sax = Gdx.audio.newMusic(Gdx.files.internal("end.mp3"));
 
-        sax.setLooping(true);
+        //sax.setLooping(true);
     }
 
     @Override
@@ -46,12 +46,12 @@ public class ScoreScreen implements Screen{
 
     @Override
     public void show() {
-        sax.play();
+        //sax.play();
     }
 
     @Override
     public void dispose() {
-        sax.dispose();
+        //sax.dispose();
     }
 
     @Override

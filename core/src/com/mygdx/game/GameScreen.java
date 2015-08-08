@@ -5,10 +5,12 @@ import aurelienribon.tweenengine.Tween;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
@@ -22,6 +24,9 @@ public class GameScreen implements Screen {
     private Deck deck;
     private Sprite cardSprite;
     private Card card;
+    private Sound[] cardSound = new Sound[4];
+    private Sound happy;
+    private Sound sad;
 
     private Array<Array<Texture>> cardTextures;
     private Array<Array<Sprite>> cardsInSlot;
@@ -60,6 +65,11 @@ public class GameScreen implements Screen {
                 cardTextures.get(suit.getValue()).add(new Texture(Gdx.files.internal(filename)));
             }
         }
+        for (int i = 0; i < 4; i++) {
+            cardSound[i] = Gdx.audio.newSound(Gdx.files.internal("cardPlace" + i + ".wav"));
+        }
+        happy = Gdx.audio.newSound(Gdx.files.internal("happy.wav"));
+        sad = Gdx.audio.newSound(Gdx.files.internal("sad.wav"));
 
         drawnCards = new Array<Sprite>();
         deck = new Deck();
@@ -102,8 +112,9 @@ public class GameScreen implements Screen {
         }
         slotScore[slotIndex] += Math.min(card.getRank().getValue(), 10);//calculate score
         Tween movement = Tween.to(cardSprite, SpriteAccessor.POS_XY, 1.0f);
-        movement.target(cardSprite.getX() + 145+(160*slotIndex), 480 - cardSprite.getHeight() - 36 * cardsInSlot.get(slotIndex).size);
+        movement.target(cardSprite.getX() + 145 + (160 * slotIndex), 480 - cardSprite.getHeight() - 36 * cardsInSlot.get(slotIndex).size);
         movement.start(game.tweenManager);
+        cardSound[MathUtils.random(0, 3)].play();
         drawCardFromDeck();
     }
 
@@ -167,7 +178,7 @@ public class GameScreen implements Screen {
         game.tweenManager.update(delta);
 
         // Reset the screen
-        Gdx.gl.glClearColor(0, 0.8f, 0, 0.2f);
+        Gdx.gl.glClearColor(0, 0.2f, 0, 0.2f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
@@ -189,17 +200,21 @@ public class GameScreen implements Screen {
             if (altScore[i] == 21 || slotScore[i] == 21) {
                 cleanUp(i);
                 score = "21!!!";
+                happy.stop();
+                happy.play();
                 totalScore += 100;
             }
             if (slotScore[i] > 21 && altScore[i] > 21) {
                 cleanUp(i);
                 score = "BUST!!!";
+                sad.stop();
+                sad.play();
                 totalScore -= 25;
             }
             game.text.draw(game.batch, score, 220 + (i * 160), 470);
         }
         totalScoreGlobal = Integer.toString(totalScore);
-        game.text.draw(game.batch, "Time: " + Integer.toString(seconds), 100, 425);
+        game.text.draw(game.batch, "Time: " + Integer.toString(seconds), 80, 425);
         game.text.draw(game.batch, totalScoreGlobal, 100 , 400);
 
         game.batch.end();
@@ -215,7 +230,10 @@ public class GameScreen implements Screen {
             for(int i = 0; i < 13; i++) {
                 cardTextures.get(j).get(i).dispose();
             }
+            cardSound[j].dispose();
         }
+        happy.dispose();
+        sad.dispose();
     }
 
     @Override
